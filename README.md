@@ -1,7 +1,7 @@
 # Rush Hour
 ## CONTEXTO
 
-Rush Hour es un conocido rompecabezas de bloques deslizantes inventado por Nob Yoshigahara en la década de 1970. Simula un aparcamiento donde se aparcan coches (que ocupan dos posiciones) y camiones (que ocupan tres). El objetivo es conseguir que uno de los coches (en la imagen el rojo, siempre en la tercera fila) llegue a la salida, moviendo los otros vehículos. Un movimiento supone desplazar un vehículo una posición a la izquierda, a la derecha, arriba o abajo, si hay espacio para ello. Los vehículos no pueden rotar ni atravesar otros vehículos, y no pueden salir del aparcamiento. 
+Rush Hour es un conocido rompecabezas de bloques deslizantes inventado por Nob Yoshigahara en la década de 1970. Simula un aparcamiento donde se aparcan coches (que ocupan dos posiciones) y camiones (que ocupan tres). El objetivo es conseguir que uno de los coches (siempre en la tercera fila) llegue a la salida, moviendo los otros vehículos. Un movimiento supone desplazar un vehículo una posición a la izquierda, a la derecha, arriba o abajo, si hay espacio para ello. Los vehículos no pueden rotar ni atravesar otros vehículos, y no pueden salir del aparcamiento. 
 
 --------------------------------------------------------------------------------------
 
