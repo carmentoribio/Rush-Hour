@@ -2,6 +2,7 @@ module Main where
 
 import AStar
 import Data.Map qualified as Map
+import Data.List (find)
 
 {-
 Ideas generales:
@@ -17,7 +18,7 @@ type Position = (Int, Int) -- (fila, columna)
 data Orientation = Horizontal | Vertical deriving (Show, Eq)
 
 data Car = Car
-  { id :: Char,
+  { carId :: Char,
     positions :: [Position],
     orientation :: Orientation
   }
@@ -54,10 +55,10 @@ heuristic cars =
   let rowA = fst (head pos)
       colMaxA = maximum (map snd pos)
       blockingCars =
-        [v | v <- cars, carId v /= 'A', any (\(r, c) -> r == rowA && c > colMaxA) (carPositions v)]
+        [v | v <- cars, carId v /= 'A', any (\(r, c) -> r == rowA && c > colMaxA) (positions v)]
    in length blockingCars + 1 -- +1 para contar el movimiento de 'A' hacia la salida
   where
-    (Car _ pos Horizontal) = find ((== 'A') . carId) cars -- encontrar el coche A
+    Just (Car _ pos Horizontal) = find ((== 'A') . carId) cars -- encontrar el coche A
 
 main :: IO ()
 main = do
