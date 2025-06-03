@@ -10,17 +10,10 @@ dfs ::
   (a -> Bool) -> -- Función que verifica si un nodo es el objetivo
   a -> -- Nodo inicial
   Maybe a -- Resultado de la búsqueda
-dfs getChildren isGoal = step Set.empty
+dfs next isGoal start = go Set.empty [start]
   where
-    step visited current
-      | isGoal current = Just current
-      | Set.member current visited = Nothing
-      | otherwise =
-          let visited' = Set.insert current visited
-              children = getChildren current
-           in tryChildren visited' children
-    tryChildren visited' [] = Nothing
-    tryChildren visited' (child : rest) =
-      case step visited' child of
-        Just result -> Just result
-        Nothing -> tryChildren visited' rest
+    go _ [] = Nothing
+    go visited (x:xs)
+      | isGoal x = Just x
+      | x `Set.member` visited = go visited xs
+      | otherwise = go (Set.insert x visited) (next x ++ xs)
