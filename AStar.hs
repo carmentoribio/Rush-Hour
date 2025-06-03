@@ -9,11 +9,13 @@ dfs ::
   (a -> [a]) -> -- Función que genera los nodos hijos
   (a -> Bool) -> -- Función que verifica si un nodo es el objetivo
   a -> -- Nodo inicial
-  Maybe a -- Resultado de la búsqueda
-dfs next isGoal start = go Set.empty [start]
+  Maybe [a] -- Resultado de la búsqueda
+dfs getChildren isGoal start = step Set.empty [(start, [start])]
   where
-    go _ [] = Nothing
-    go visited (x:xs)
-      | isGoal x = Just x
-      | x `Set.member` visited = go visited xs
-      | otherwise = go (Set.insert x visited) (next x ++ xs)
+    step _ [] = Nothing
+    step visited ((x, path):xs)
+      | isGoal x = Just path
+      | x `Set.member` visited = step visited xs
+      | otherwise = 
+          let children = [(y, path ++ [y]) | y <- getChildren x]
+            in step (Set.insert x visited) (children ++ xs)
