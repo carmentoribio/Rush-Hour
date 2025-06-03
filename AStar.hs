@@ -13,9 +13,9 @@ dfs ::
 dfs getChildren isGoal start = step Set.empty [(start, [start])]
   where
     step _ [] = Nothing
-    step visited ((x, path):xs)
+    step visited ((x, path) : xs)
       | isGoal x = Just path
       | x `Set.member` visited = step visited xs
-      | otherwise = 
+      | otherwise =
           let children = [(y, path ++ [y]) | y <- getChildren x]
-            in step (Set.insert x visited) (children ++ xs)
+           in step (Set.insert x visited) (children ++ xs)
