@@ -51,7 +51,7 @@ movements :: [Int]
 -- Desplazamientos posibles: + (adelante), - (atrás), vehículos más pequeños de 2 casillas se pueden desplazar máximo 4 casillas
 movements = [4, 3, 2, 1, -1, -2, -3, -4]
 
-{- FIXME: basura que ha dado PErplejo machaca cosas, la dejo por si ves algo que te sirva dentro
+-- FIXME: basura que ha dado PErplejo machaca cosas, la dejo por si ves algo que te sirva dentro
 moveVehicle :: [Car] -> Car -> [[Car]]
 moveVehicle board car =
   [ movedCar : others
@@ -74,17 +74,17 @@ moveVehicle board car =
       in if isValid then Just v { positions = newPositions } else Nothing
 
     -- Genera los pasos intermedios del trayecto
-    steps d | d > 0     = [1..d]
-            | d < 0     = [d..(-1)]
+    steps d | d > 0     = [1..(d+1)]
+            | d < 0     = [(d-1)..(-1)]
             | otherwise = []
 
     inBounds (r, c) = r >= 0 && r < 6 && c >= 0 && c < 6
 
     -- Puedes ajustar los movimientos permitidos según el tamaño del coche
     allowedMovements carLen = filter (\d -> abs d < 6) [4,3,2,1,-1,-2,-3,-4]
--}
 
 
+{-
 moveVehicle :: [Car] -> Car -> [[Car]]
 -- PRE: El coche debe estar en el tablero y las posiciones deben ser válidas.
 -- POST: Devuelve una lista de tableros resultantes de hacer todos los movimientos posibles del coche.
@@ -111,7 +111,7 @@ moveVehicle board car =
       in (if isValid then Just newPos else Nothing, v { positions = newPos })
 
     inBounds (f, c) = f >= 0 && f < 6 && c >= 0 && c < 6 -- Verifica que las posiciones estén dentro del tablero 6x6
-
+-}
 isSolved :: [Car] -> Bool
 -- PRE: El coche 'A' debe existir en el tablero y estar orientado horizontalmente.
 -- POST: Devuelve True si el coche 'A' ha llegado a la posición de salida, False en caso contrario.
