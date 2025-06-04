@@ -1,10 +1,20 @@
 module AStar where
 
-import Data.List (sortOn)
+import Data.List (sortOn, find)
 import Data.Map qualified as Map
 import Data.Maybe (fromMaybe)
 import Data.Set qualified as Set
+-- Definición de tipos
+type Position = (Int, Int) -- (fila, columna)
 
+data Orientation = Horizontal | Vertical deriving (Show, Eq, Ord)
+
+data Car = Car
+  { carId :: Char,             -- Identificador del coche (A-Z)
+    positions :: [Position],   -- Lista de posiciones ocupadas por el coche
+    orientation :: Orientation -- Orientación del coche (Horizontal o Vertical)
+  }
+  deriving (Show, Eq, Ord)
 
 
 dfs ::
@@ -23,9 +33,62 @@ dfs getChildren isGoal start = step Set.empty [(start, [start])]
           let children = [(y, y:path) | y <- getChildren x] -- guardamos los hijos con el camino actual en orden inverso por eficiencia
            in step (Set.insert x visited) (children ++ xs)
 
+-- Para el cálculo de la heurística, sumar el número de coches que bloquean el camino de 'A' hacia la salida (ya que necesariamente habrá
+-- que mover como mínimo esos vehículos) y el propio movimiento de 'A' (ya que al menos un movimiento es necesario para que 'A' llegue a la salida).
+heuristic :: [Car] -> Int
+heuristic cars =
+        -- PRE: El coche 'A' debe existir en el tablero y estar orientado horizontalmente.
+        -- POST: Devuelve el número de coches que bloquean el camino de 'A' hacia la salida más 1 (el movimiento de 'A' hacia la salida).
+  let rowA = fst (head pos)
+      colMaxA = maximum (map snd pos)
+      blockingCars =
+        [v | v <- cars, carId v /= 'A', any (\(r, c) -> r == rowA && c > colMaxA) (positions v)] -- Filtra los coches que están en la misma fila que 'A' y a la derecha de 'A'
+   in length blockingCars + 1
+  where
+    Just (Car _ pos Horizontal) = find ((== 'A') . carId) cars -- encontrar el coche A
+
+movements :: [Int]
+-- Desplazamientos posibles: + (adelante), - (atrás), vehículos más pequeños de 2 casillas se pueden desplazar máximo 4 casillas
+movements = [4, 3, 2, 1, -1, -2, -3, -4]
+
+moveVehicle :: [Car] -> Car -> [[Car]]
+-- PRE: El coche debe estar en el tablero y las posiciones deben ser válidas.
+-- POST: Devuelve una lista de tableros resultantes de hacer todos los movimientos posibles del coche.
+moveVehicle board car =
+  [ newVehicle : others -- Crea un nuevo tablero con el coche movido y los demás coches sin cambios
+  | delta <- movements
+  , let (maybeNewPositions, newVehicle) = moveIfPossible delta car others -- Intenta mover el coche en la dirección indicada por delta
+  , Just pos <- [maybeNewPositions] -- Asegura que el movimiento es válido y devuelve las nuevas posiciones del coche
+  ]
+  where
+    others = filter (/= car) board
+    occupied = concatMap positions others
+
+    moveIfPossible :: Int -> Car -> [Car] -> (Maybe [Position], Car)
+    -- PRE: El coche debe estar en el tablero y las posiciones deben ser válidas.
+    -- POST: Devuelve las nuevas posiciones del coche si el movimiento es válido, o Nothing si no es posible.
+    moveIfPossible delta v _ =
+      let pos = positions v
+          newPos = case orientation v of -- Determina la nueva posición según la orientación del coche
+            Horizontal -> map (\(f, c) -> (f, c + delta)) pos
+            Vertical   -> map (\(f, c) -> (f + delta, c)) pos
+                                        -- Verifica que las nuevas posiciones estén dentro de los límites y no ocupadas por otros coches
+          isValid = all inBounds newPos && all (`notElem` occupied) newPos --FIXME: hay que comprobar que no te saltas ningún otro coche
+      in (if isValid then Just newPos else Nothing, v { positions = newPos })
+
+    inBounds (f, c) = f >= 0 && f < 6 && c >= 0 && c < 6 -- Verifica que las posiciones estén dentro del tablero 6x6
+
+isSolved :: [Car] -> Bool
+-- PRE: El coche 'A' debe existir en el tablero y estar orientado horizontalmente.
+-- POST: Devuelve True si el coche 'A' ha llegado a la posición de salida, False en caso contrario.
+isSolved cars =
+  case find (\v -> carId v == 'A' && orientation v == Horizontal) cars of
+    Just v  -> any ((== 5) . snd) (positions v) -- Comprueba si alguna posición de 'A' está en la columna 5
+    Nothing -> False
+
 -- A* usando listas como frontera
-aStar
-  :: (Ord state)
+aStar ::
+  (Ord state)
   => (state -> Bool)         -- ^ ¿Es este estado el objetivo?
   -> (state -> [state])      -- ^ Sucesores de un estado
   -> (state -> Int)          -- ^ Heurística
