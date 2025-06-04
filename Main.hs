@@ -1,6 +1,6 @@
 module Main where
 
-import AStar
+import AStar ( aStar )
 import Data.Map qualified as Map
 import Data.List (find)
 
@@ -15,14 +15,14 @@ Ideas generales:
 -- Definición de tipos
 type Position = (Int, Int) -- (fila, columna)
 
-data Orientation = Horizontal | Vertical deriving (Show, Eq)
+data Orientation = Horizontal | Vertical deriving (Show, Eq, Ord)
 
 data Car = Car
   { carId :: Char,
     positions :: [Position],
     orientation :: Orientation
   }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Ord)
 
 -- TODO: actualemnte inutil, si no seusa borrar
 newtype Board = Board {cars :: [Car]} deriving (Show, Eq)
@@ -60,6 +60,49 @@ heuristic cars =
   where
     Just (Car _ pos Horizontal) = find ((== 'A') . carId) cars -- encontrar el coche A
 
+-- Desplazamientos posibles: + (adelante), - (atrás), vehículos más pequeños de 2 casillas se pueden desplazar máximo 4 casillas
+movements :: [Int]
+movements = [4, 3, 2, 1, -1, -2, -3, -4]
+
+moveVehicle :: [Car] -> Car -> [[Car]]
+moveVehicle board car =
+  [ newVehicle : others
+  | delta <- movements
+  , let (maybeNewPositions, newVehicle) = moveIfPossible delta car others
+  , Just pos <- [maybeNewPositions]
+  ]
+  where
+    others = filter (/= car) board
+    occupied = concatMap positions others
+
+    moveIfPossible :: Int -> Car -> [Car] -> (Maybe [Position], Car)
+    moveIfPossible delta v _ =
+      let pos = positions v
+          newPos = case orientation v of
+            Horizontal -> map (\(f, c) -> (f, c + delta)) pos
+            Vertical   -> map (\(f, c) -> (f + delta, c)) pos
+          isValid = all inBounds newPos && all (`notElem` occupied) newPos
+      in (if isValid then Just newPos else Nothing, v { positions = newPos })
+
+    inBounds (f, c) = f >= 0 && f < 6 && c >= 0 && c < 6
+
+isSolved :: [Car] -> Bool
+isSolved cars =
+  case find (\v -> carId v == 'A' && orientation v == Horizontal) cars of
+    Just v  -> any ((== 5) . snd) (positions v)
+    Nothing -> False
+
+
+inicialState :: [Car]
+inicialState = parseMap "BBBooCooDooCAADooCEoDoFFEoooGoHHHoGo"
+
+sucessors :: [Car] -> [[Car]]
+sucessors state = concatMap (moveVehicle state) state
+
+solution :: Maybe [[Car]]
+solution = aStar isSolved sucessors heuristic inicialState
+
 main :: IO ()
-main = do
-  putStrLn "Hola"
+main = case solution of
+  Nothing -> putStrLn "No se encontró solución."
+  Just camino -> mapM_ print camino
