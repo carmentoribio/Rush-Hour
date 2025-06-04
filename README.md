@@ -14,6 +14,7 @@ Para ello se propondrá una fórmula (polinomio) en función de características
 --------------------------------------------------------------------------------------
 
 ### Leyenda del fichero RushHour.txt
+En el fichero RushHour.txt se pueden encontrar diversos ejemplos de semillas de mapas resolubles. El formato de un mapa es el siguiente:
 El aparcamiento es un tablero de 6 filas y 6 columnas.
 Cada línea tiene una cadena con 36 caracteres que representan el tablero sin resolver. Cada 6 elementos representan una fila.
 - o Posición vacía

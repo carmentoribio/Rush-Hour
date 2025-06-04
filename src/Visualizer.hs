@@ -1,6 +1,13 @@
+{- TODO: Mejoras de la aplicación:
+1. Añadir la posibilidad de meter la semilla del mapa directamente en la ventana en lugar de por terminal (lo que implicaria cambiar en el readme las instrucciones)
+2. Mostrar el nivel de dificultad en la ventana
+3. Añadir un boton de restart o algo asi
+4. Limpiar este codigo, esta super caotico perdon :,) 
+-}
 module Visualizer (runVisualizer) where
 
 import BoardUtils (Board, Car (..))
+import Difficulty (classifyDifficulty)
 import Data.Map qualified as Map
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
@@ -16,8 +23,8 @@ boardSize :: Int
 boardSize = 6
 
 windowWidth, windowHeight :: Int
-windowWidth = boardSize * round tileSize
-windowHeight = boardSize * round tileSize + 50 -- espacio extra para contador
+windowWidth = boardSize * round tileSize + 200
+windowHeight = boardSize * round tileSize + 50 + 200 -- espacio extra para contador
 
 -- ========================= ASIGNACIÓN DE COLORES =========================
 -- Asigna un color a cada coche basado en su ID (letra mayúscula)
@@ -71,8 +78,9 @@ drawWorld :: World -> Picture
 drawWorld w =
   pictures
     [ drawBoard (steps w !! current w),
-      translate 150 (-270) $ scale 0.15 0.15 $ color white $ text $ "Paso: " ++ show (current w) ++ "/" ++ show (length (steps w) - 1),
-      translate (-200) (-270) $ scale 0.15 0.15 $ color (if playing w then green else white) $ text "Presiona espacio para Play/Pausa"
+      translate 150 (-270) $ scale 0.15 0.15 $ color white $ text $ "Step: " ++ show (current w) ++ "/" ++ show (length (steps w) - 1),
+      translate (-200) (-270) $ scale 0.15 0.15 $ color (if playing w then green else white) $ text "Press SPACE to Play/Pause",
+      translate (-200) (300) $ scale 0.15 0.15 $ color white $ text $ "Difficulty: " -- TODO
     ]
 
 -- Manejo de eventos

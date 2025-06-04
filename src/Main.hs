@@ -1,3 +1,4 @@
+-- TODO general: fix los warnings que da ghc -Wall (salen al ejecutar cabal build)
 module Main where
 
 import AStar (aStar)
@@ -30,7 +31,9 @@ isSolved cars =
     Just v -> any ((== 5) . snd) (positions v) -- Comprueba si alguna posición de 'A' está en la columna 5
     Nothing -> False
 
--- FIXME: La idea es que imprima los pasos y la clasificación de dificultad del mapa dado como argumento
+-- TODO: quitar de aqui el classifyByDifficulty, o en su defecto pasarselo al visualizer como otro parametro mas (creo que esto tiene mas sentido)
+-- TODO: quitar que el board se lea de terminal, mejor que se lea desde el propio visualizer
+-- TODO: posiblemente haya que mover el visualizer aqui directamente al main, y renombrar Visualizer.hs a algo rollo VisualizerUtils.hs ????
 main :: IO ()
 main = do
   args <- getArgs
@@ -45,9 +48,7 @@ main = do
 
             -- En caso de que se encuentre solución, mostrar los pasos y la clasificación de dificultad
             Just solution -> do
-              putStrLn "Solución paso a paso:"
               runVisualizer solution
-              putStrLn $ "Número de pasos: " ++ show (length solution - 1) -- Restamos 1 porque el primer estado es el inicial
               putStrLn $ "Clasificación de dificultad: " ++ classifyDifficulty board solution
     _ -> do
       putStrLn "Uso: ./Main <mapa>"

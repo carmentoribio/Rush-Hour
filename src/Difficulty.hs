@@ -1,3 +1,6 @@
+{- TODO:
+Ajustar los parámetros para clasificar correctamente los mapas
+-}
 module Difficulty where
 
 import BoardUtils (Board, Car (..))
