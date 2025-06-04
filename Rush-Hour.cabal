@@ -1,0 +1,24 @@
+cabal-version:      3.0
+name:               Rush-Hour
+version:            0.1.0.0
+-- synopsis: A simple Haskell program to solve the Rush Hour puzzle.
+-- description: This program implements a solution to the Rush Hour puzzle using Haskell.
+license:            MIT
+license-file:       LICENSE
+author:             Carmen Toribio Pérez
+maintainer:         carmen.tperez@alumnos.upm.es
+-- copyright:        (c) 2025 Carmen Toribio Pérez
+build-type:         Simple
+extra-doc-files:    README.md
+
+common warnings
+    ghc-options: -Wall
+
+executable Rush-Hour
+    import:           warnings
+    main-is:          Main.hs
+    other-modules:    AStar BoardUtils Difficulty Visualizer
+    -- other-extensions:
+    build-depends:    base ^>=4.17.2.0, containers ^>= 0.6.0.1, gloss ^>= 1.13.2.0
+    hs-source-dirs:   src
+    default-language: GHC2021

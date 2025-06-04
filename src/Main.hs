@@ -3,7 +3,7 @@ module Main where
 import AStar (aStar)
 import BoardUtils (Board, Car(..), Orientation(..), parseMap, getLegalMoves, showBoard)
 import Difficulty (classifyDifficulty)
--- import Visualizer (runVisualizer)
+import Visualizer (runVisualizer)
 import Data.List (find)
 import System.Environment (getArgs)
 import System.Exit (exitFailure)
@@ -46,7 +46,7 @@ main = do
             -- En caso de que se encuentre solución, mostrar los pasos y la clasificación de dificultad
             Just solution -> do
               putStrLn "Solución paso a paso:"
-              mapM_ (\b -> putStrLn (showBoard b) >> putStrLn "----") solution
+              runVisualizer solution
               putStrLn $ "Número de pasos: " ++ show (length solution - 1) -- Restamos 1 porque el primer estado es el inicial
               putStrLn $ "Clasificación de dificultad: " ++ classifyDifficulty board solution
     _ -> do
