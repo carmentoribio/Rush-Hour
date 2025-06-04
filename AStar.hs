@@ -31,11 +31,12 @@ aStar
   -> (state -> Int)          -- ^ Heurística
   -> state                   -- ^ Estado inicial
   -> Maybe [state]           -- ^ Camino solución (o Nothing)
+-- PRE: La función `isGoal` debe ser una función que verifica si un estado es el objetivo. La heuristica debe ser válida y no negativa para todos los estados.
+-- POST: Devuelve un camino desde el estado inicial hasta el objetivo, o Nothing si no hay solución.
 aStar isGoal successors heuristic initial = search Set.empty [(initial, 0, heuristic initial, [initial])]
   where
     -- La frontera es una lista de tuplas: (estado, g, f, camino)
     -- g: coste real hasta aquí, f: g + h, camino: desde inicial hasta aquí
-
     search _ [] = Nothing  -- Si la frontera está vacía, no hay solución
 
     search visited ((current, g, f, path):frontier)
