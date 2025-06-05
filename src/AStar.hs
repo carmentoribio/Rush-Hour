@@ -21,17 +21,17 @@ aStar getChildren isGoal heuristic start = search Set.empty [(start, 0, heuristi
     search visited ((current, g, _, path) : frontier)
       | isGoal current = Just (reverse path) -- Invertimos el camino para devolverlo en el orden correcto
       | Set.member current visited = search visited frontier
-      | otherwise =
-          let visited' = Set.insert current visited
-              -- Genera sucesores que no han sido visitados
-              children =
-                [ (child, g + 1, g + 1 + heuristic child, child : path)
-                  | child <- getChildren current,
-                    Set.notMember child visited'
-                ]
-              -- Añade los hijos a la frontera y la ordena por f (coste estimado)
-              newFrontier = insertAllSorted children frontier
-           in search visited' newFrontier
+      | otherwise = search visited' newFrontier
+      where
+      visited' = Set.insert current visited
+      -- Genera sucesores que no han sido visitados
+      children =
+        [ (child, g + 1, g + 1 + heuristic child, child : path)
+        | child <- getChildren current,
+          Set.notMember child visited'
+        ]
+      -- Añade los hijos a la frontera y la ordena por f (coste estimado)
+      newFrontier = insertAllSorted children frontier
 
     -- Inserta una lista de nodos en la frontera y la ordena por f
     insertAllSorted xs ys = sortOn (\(_, _, f, _) -> f) (xs ++ ys)

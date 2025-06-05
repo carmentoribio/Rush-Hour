@@ -1,8 +1,5 @@
 {- TODO: Mejoras de la aplicación:
-1. Añadir la posibilidad de meter la semilla del mapa directamente en la ventana en lugar de por terminal (lo que implicaria cambiar en el readme las instrucciones)
-2. Mostrar el nivel de dificultad en la ventana
 3. Añadir un boton de restart o algo asi
-4. Limpiar este codigo, esta super caotico perdon :,)
 -}
 module Visualizer (runVisualizer) where
 
@@ -31,47 +28,47 @@ windowHeight = boardSize * round tileSize + 50 + 200 -- espacio extra para conta
 carColor :: Char -> Color
 carColor 'o' = greyN 0.2
 carColor 'A' = red
-carColor char =
-  let idx = fromEnum char - fromEnum 'A'
-      total = 26 -- Total de letras mayúsculas (A-Z)
-      jump = 7 -- Coprimo de 26 para mezclar todos los colores
-      scrambledIdx = (idx * jump) `mod` total -- Índice modificado para mezclar colores y que no se asignen en una tonalidad lineal (para aumentar la diversidad de colores y el contraste en general)
-      hue = fromIntegral scrambledIdx * (360 / 26) -- Calculo de la tonalidad (hue) en el espacio de color HSV
-      (r, g, b) = hsvToRGB hue 1.0 1.0 -- Full saturación y brillo
-   in makeColor r g b 1.0 -- Crea un color RGB a partir de HSV, con opacidad 1.0 (100% opaco)
+carColor char = makeColor r g b 1.0 -- Crea un color RGB a partir de HSV, con opacidad 1.0 (100% opaco)
   where
+    idx = fromEnum char - fromEnum 'A'
+    total = 26 -- Total de letras mayúsculas (A-Z)
+    jump = 7 -- Coprimo de 26 para mezclar todos los colores
+    scrambledIdx = (idx * jump) `mod` total -- Índice modificado para mezclar colores y que no se asignen en una tonalidad lineal (para aumentar la diversidad de colores y el contraste en general)
+    hue = fromIntegral scrambledIdx * (360 / 26) -- Calculo de la tonalidad (hue) en el espacio de color HSV
+    (r, g, b) = hsvToRGB hue 1.0 1.0 -- Full saturación y brillo
+
     hsvToRGB :: Float -> Float -> Float -> (Float, Float, Float)
-    hsvToRGB h s v =
-      let c = v * s
-          x = c * (1 - abs ((h / 60) `mod'` 2 - 1))
-          m = v - c
-          (r', g', b') = case floor (h / 60) `mod` 6 of
-            0 -> (c, x, 0)
-            1 -> (x, c, 0)
-            2 -> (0, c, x)
-            3 -> (0, x, c)
-            4 -> (x, 0, c)
-            5 -> (c, 0, x)
-            _ -> (0, 0, 0)
-       in (r' + m, g' + m, b' + m)
+    hsvToRGB h s v = (r' + m, g' + m, b' + m)
+      where
+        c = v * s
+        x = c * (1 - abs ((h / 60) `mod'` 2 - 1))
+        m = v - c
+        (r', g', b') = case (floor (h / 60) :: Int) `mod` 6 of
+          0 -> (c, x, 0)
+          1 -> (x, c, 0)
+          2 -> (0, c, x)
+          3 -> (0, x, c)
+          4 -> (x, 0, c)
+          5 -> (c, 0, x)
+          _ -> (0, 0, 0)
 
     -- Modulo para Float
     mod' :: Float -> Float -> Float
-    mod' x y = x - fromIntegral (floor (x / y)) * y
+    mod' x y = x - fromIntegral (floor (x / y) :: Int) * y
 
 -- ========================================================================
 
 -- Dibuja el tablero actual
 drawBoard :: Board -> Picture
-drawBoard cars =
-  let posMap = Map.fromList [((r, c), carId car) | car <- cars, (r, c) <- positions car]
-      drawTile (r, c) =
-        let ch = Map.findWithDefault 'o' (r, c) posMap
-            col = carColor ch
-         in translate (fromIntegral c * tileSize - 240) (240 - fromIntegral r * tileSize) $
-              color col $
-                rectangleSolid tileSize tileSize
-   in pictures [drawTile (r, c) | r <- [0 .. 5], c <- [0 .. 5]]
+drawBoard cars = pictures [drawTile (r, c) | r <- [0 .. 5], c <- [0 .. 5]]
+  where
+    posMap = Map.fromList [((r, c), carId car) | car <- cars, (r, c) <- positions car]
+    drawTile (r, c) = translate (fromIntegral c * tileSize - 240) (240 - fromIntegral r * tileSize) $
+                      color col $
+                      rectangleSolid tileSize tileSize
+      where
+        ch = Map.findWithDefault 'o' (r, c) posMap
+        col = carColor ch
 
 -- Dibuja contador y botón "Play"
 drawWorld :: World -> Picture
@@ -80,6 +77,7 @@ drawWorld w =
     [ drawBoard (steps w !! current w),
       translate 150 (-270) $ scale 0.15 0.15 $ color white $ text $ "Step: " ++ show (current w) ++ "/" ++ show (length (steps w) - 1),
       translate (-200) (-270) $ scale 0.15 0.15 $ color (if playing w then green else white) $ text "Press SPACE to Play/Pause",
+      translate (-200) (-300) $ scale 0.15 0.15 $ color white $ text "Press ENTER to Restart",
       translate (-200) 300 $ scale 0.15 0.15 $ color white $ text $ "Difficulty: " ++ show levelDifficulty, -- TODO
       translate (tileSize * 3) tileSize $ scale 0.15 0.15 $ color white $ text "->"
     ]
@@ -90,6 +88,7 @@ drawWorld w =
 -- Manejo de eventos
 handleEvent :: Event -> World -> World
 handleEvent (EventKey (SpecialKey KeySpace) Down _ _) w = w {playing = not (playing w)}
+handleEvent (EventKey (SpecialKey KeyEnter) Down _ _) w = w {current = 0, playing = False}
 handleEvent _ w = w
 
 -- Avanza automáticamente si está en modo "play"

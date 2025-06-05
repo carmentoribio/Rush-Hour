@@ -22,35 +22,36 @@ classifyDifficulty ::
   String
 -- PRE: El tablero debe ser una cadena de 36 caracteres (6x6) con mayúsculas (A-Z) y 'o' (espacio vacío).
 -- POST: Devuelve una cadena que indica la categoría de dificultad del tablero ("Principiante", "Intermedio", "Avanzado" o "Experto").
-classifyDifficulty board solutionPath =
-  let metrics =
-        SolutionMetrics
-          { steps = length solutionPath - 1, -- Restamos 1 porque el primer estado es el inicial
-            movedCars = countMovedCarsAllSteps solutionPath,
-            carCount = length board,
-            symmetryScore = calculateSymmetry board
-          }
-      score = difficultyScore metrics
-   in traceShow (metrics, score) $ assignCategory score
+classifyDifficulty board solutionPath = traceShow (metrics, score) $ assignCategory score
   where
+    metrics =
+      SolutionMetrics
+        { steps = length solutionPath - 1, -- Restamos 1 porque el primer estado es el inicial
+          movedCars = countMovedCarsAllSteps solutionPath,
+          carCount = length board,
+          symmetryScore = calculateSymmetry board
+        }
+    score = difficultyScore metrics
+
     difficultyScore :: SolutionMetrics -> Double
     -- PRE: Las métricas deben contener el número de pasos, coches movidos, coches iniciales y puntuación de simetría.
     -- POST: Devuelve un valor de dificultad entre 0 y 100.
-    difficultyScore metrics =
-      let stepScore = fromIntegral (steps metrics)
-          movedCarsScore = fromIntegral (movedCars metrics) * (100 / fromIntegral (carCount metrics))
-          simmetryScore = fromIntegral (100 - symmetryScore metrics)
-       in 0.7 * stepScore
-            + 0.2 * movedCarsScore
-            + 0.1 * simmetryScore
+    difficultyScore m =
+      0.7 * stepScore ** 1.4
+        + 0.2 * sqrt movedCarsScore
+        + 0.1 * simmetryScore
+      where
+        stepScore = fromIntegral (steps m)
+        movedCarsScore = fromIntegral (movedCars m) * (100 / fromIntegral (carCount m))
+        simmetryScore = fromIntegral (100 - symmetryScore m)
 
     assignCategory :: Double -> String
     -- PRE: El score debe ser un valor entre 0 y 100.
     -- POST: Devuelve una cadena que indica la categoría de dificultad del tablero.
-    assignCategory score
-      | score < 35 = "BEGINNER"
-      | score < 40 = "INTERMEDIATE"
-      | score < 45 = "ADVANCED"
+    assignCategory s
+      | s < 50 = "BEGINNER"
+      | s < 100 = "INTERMEDIATE"
+      | s < 125 = "ADVANCED"
       | otherwise = "EXPERT"
 
 countMovedCars ::
@@ -81,7 +82,7 @@ calculateSymmetry cars =
     horizontalSymmetry = symmetryCheck (\(r, c) -> (r, 5 - c))
     verticalSymmetry = symmetryCheck (\(r, c) -> (5 - r, c))
 
-    symmetryCheck transform =
-      let mirrored = Map.fromList [(transform pos, car) | car <- cars, pos <- positions car] -- Creamos un mapa de posiciones reflejadas
-          matches = [car | car <- cars, all (`Map.member` mirrored) (positions car)] -- Comprobamos cuántos coches tienen posiciones que coinciden con sus reflejos
-       in (length matches * 100) `div` length cars -- FIXME: no sé si esto da un númeero normal
+    symmetryCheck transform = (length matches * 100) `div` length cars
+      where
+      mirrored = Map.fromList [(transform pos, car) | car <- cars, pos <- positions car] -- Creamos un mapa de posiciones reflejadas
+      matches = [car | car <- cars, all (`Map.member` mirrored) (positions car)] -- Comprobamos cuántos coches tienen posiciones que coinciden con sus reflejos

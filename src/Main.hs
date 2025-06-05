@@ -12,19 +12,18 @@ import System.Exit (exitFailure)
 -- Para el cálculo de la heurística, sumar el número de coches que bloquean el camino de 'A' hacia la salida (ya que necesariamente habrá
 -- que mover como mínimo esos vehículos) y el propio movimiento de 'A' (ya que al menos un movimiento es necesario para que 'A' llegue a la salida).
 heuristic :: Board -> Int
-heuristic cars =
   -- PRE: El coche 'A' debe existir en el tablero y estar orientado horizontalmente.
   -- POST: Devuelve el número de coches que bloquean el camino de 'A' hacia la salida más 1 (el movimiento de 'A' hacia la salida).
-  let rowA = fst (head pos)
-      colMaxA = maximum (map snd pos)
-      blockingCars =
-        [v | v <- cars, carId v /= 'A', any (\(r, c) -> r == rowA && c > colMaxA) (positions v)] -- Filtra los coches que están en la misma fila que 'A' y a la derecha de 'A'
-   in length blockingCars + 1
+heuristic cars = length blockingCars + 1
   where
     pos = case find ((== 'A') . carId) cars of
       Just (Car _ p Horizontal) -> p
       Just (Car _ _ Vertical)   -> error "El coche 'A' no está orientado horizontalmente."
       Nothing                   -> error "No se encontró el coche 'A' en el tablero."
+    rowA = fst (head pos)
+    colMaxA = maximum (map snd pos)
+    -- Filtra los coches que están en la misma fila que 'A' y a la derecha de 'A'
+    blockingCars = [v | v <- cars, carId v /= 'A', any (\(r, c) -> r == rowA && c > colMaxA) (positions v)]
 
 isSolved :: Board -> Bool
 -- PRE: El coche 'A' debe existir en el tablero y estar orientado horizontalmente.

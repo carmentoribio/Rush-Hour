@@ -1,0 +1,134 @@
+\documentclass{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{polyglossia}
+\usepackage{graphicx}
+\usepackage{fontspec}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{listings}
+
+\graphicspath{ {./images/} }
+
+\setdefaultlanguage{spanish}
+\setmainfont{Latin Modern Roman}
+
+\title{ \textbf{Práctica 4: Rush Hour} }
+\author{ \textbf{Carmen Toribio Pérez(22M009) y Marcos Carnerero Blanco(22M039)} }
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{Introducción}
+En esta práctica hemos modelado un clasificador y visualizador de mapas del juego Rush Hour, para lo cual hemos implementado un resolvedor de mapas a base del algoritmo A*. Este juego consiste en un tablero de 6x6 donde los jugadores deben mover vehículos para liberar el coche objetivo, inicialemente en el extremo izquierdo del mapa y tercera fila. El sistema calcula la dificultad de cada tablero ponderando el número mínimo de movimientos necesarios para alcanzar la solución, los coches en el tablero y su disposición inicial.
+
+\section*{Algoritmo A* y su implementación}
+Nuestro resolvedor utiliza el algoritmo A* para encontrar la secuencia óptima de movimientos que resuelve el tablero. A* combina la búsqueda por costo uniforme y la búsqueda heurística, utilizando una función de evaluación $f(n) = g(n) + h(n)$, donde:
+\begin{itemize}
+\item \textbf{Función heurística}: Cantidad de véhiculos bloqueando el camino del coche objetivo + 1, ya que como mínimo se necesitarán estos movimientos para liberar el coche, lo cual hace a esta función una heurística aceptable.
+\item \textbf{Costo acumulado}: Número de movimientos realizados
+\item \textbf{Cola de prioridad}: Usamos un \textbf{Data.Set} que ordenamos según el valor de $f(n)$, para asegurar que siempre procesamos el nodo con menor costo estimado primero.
+\end{itemize}
+
+\begin{algorithm}
+\caption{A* para Rush Hour}
+\begin{algorithmic}[]
+\State Inicializar algoritmo con el estado inicial del tablero
+\While{queden estados por explorar}
+    \If{nodo es solución}
+        \State \Return g(n)
+    \EndIf
+    \For{movimiento válido no visitado previamente}
+        \State Generar estados sucesores con los movimientos posibles de los vehículos
+        \If{estado no visitado}
+            \State Insertar el hijo a la frontera de búsqueda con $f(n) = g(n - 1) + h(n) + 1$, donde $g(n - 1)$ es el costo del padre y $h(n)$ es la heurística del hijo, con un paso más al haber movido un vehículo.
+        \EndIf
+    \EndFor
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+\section*{Librerías usadas}
+Hemos usado varias Librerías de Haskell para facilitar el desarrollo del sistema:
+\subsection{Librería gráfica: Gloss}
+Para la facilitar la visualización del tablero y la animación de movimientos, hemos utilizado la librería \texttt{Gloss}. Esta librería permite crear gráficos de forma sencilla y eficiente, ideal para simulaciones como la nuestra. Nos interesa principalmente para:
+\begin{itemize}
+\item \textbf{Visualización del tablero} Nos permite representar el estado del tablero de forma gráfica, mostrando los vehículos con colores y su disposición en el mapa.
+\item \textbf{Animación de movimientos con \texttt{animate}} Actualizamos el estado del tablero cada medio segundo, mostrando cómo se mueven los vehículos hasta alcanzar la solución.
+\item \textbf{Interfaz de usuario con controles básicos} Podemos pausar, reiniciar y salir del juego mediante teclas, lo que mejora la experiencia del usuario.
+\end{itemize}
+Esta librería aún no permitiendo atajos de teclado o uso del portapapeles, lo cual hubiese sido útil para una mejor interacción con el usuario, pidiendo el mapa a resolver por la ventana, su faciliddad de implementación y su integración con Haskell nos hizo decantarnos por ella.
+
+\subsection{Librería de estructuras: Data}
+Por la dificultad del proyecto necesitamos poder gestionar eficientemente los estados del tablero y las posiciones de los vehículos. Para ello, hemos utilizado varias estructuras de datos proporcionadas por la librería \texttt{Data} de Haskell:
+\begin{itemize}
+\item \texttt{Data.Map} para el tratamiento de los estados del tablero, parsearlos, escribirlos y pasarlos como argumentos.
+\item \texttt{Data.Set} para gestión de posiciones ocupadas.
+\item \texttt{Data.List} para manipulación de listas y generación de movimientos válidos, con funciones como find.
+\end{itemize}
+
+\section*{Estructura usada}
+\subsection{Módulos}
+Los módulos del proyecto están organizados de la siguiente manera:
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Módulo} & \textbf{Función} \\
+\hline
+Main & Inicialización de la ejecución e implementación específica de A* \\
+AStar & Implementación abstracta del algoritmo \\
+BoardUtils & Definición de tipos, parser de los mapas y movimientos posibles del tablero \\
+Difficulty & Cálculo de la dificultad del tablero \\
+Visualizer & Renderizado del mapa con Gloss y bucle de servicio \\
+\hline
+\end{tabular}
+\end{table}
+
+
+\subsection{Tipos declarados}
+\begin{lstlisting}[language=Haskell]
+type Position = (Int, Int) -- (fila, columna)
+
+data Orientation = Horizontal | Vertical deriving (Show, Eq, Ord)
+
+data Car = Car
+  { carId :: Char, -- Identificador del coche (A-Z)
+    positions :: [Position], -- Lista de posiciones ocupadas por el coche
+    orientation :: Orientation -- Orientación del coche (Horizontal o Vertical)
+  }
+  deriving (Show, Eq, Ord)
+
+type Board = [Car] -- Lista de coches en el tablero
+
+data SolutionMetrics = SolutionMetrics
+  { steps :: Int, -- Número de movimientos en solución óptima
+    movedCars :: Int, -- Cantidad de coches diferentes movidos
+    carCount :: Int, -- Cantidad total de coches en el tablero
+    symmetryScore :: Int -- Grado de simetría (0-100)
+  }
+  deriving (Show)
+
+type Step = Int
+
+data World = World {steps :: [Board], current :: Step, playing :: Bool}
+\end{lstlisting}
+
+\section*{Problemas en el desarrollo}
+\begin{itemize}
+\item \textbf{Representación eficiente del estado}: Solucionado con hashing de posiciones
+\item \textbf{Generación de movimientos válidos}: Implementación mediante guardas en Haskell
+\item \textbf{Rendimiento en grandes tableros}: Optimizado con poda de estados repetidos
+\end{itemize}
+
+\section{Conclusiones}
+El sistema logra calcular consistentemente la dificultad de tableros mediante A*, demostrando la efectividad de algoritmos heurísticos en problemas de planificación. Las estructuras inmutables de Haskell mostraron ventajas en la gestión segura del estado, aunque requirieron técnicas específicas de optimización. El lenguaje nos permitió implementar un sistema robusto y eficiente, con técnicas de orden superior que facilitan la modelización de este problema. La visualización con Gloss mejoró la experiencia del usuario, permitiendo observar el proceso de resolución en tiempo real.
+
+\end{document}
