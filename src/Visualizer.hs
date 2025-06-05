@@ -1,6 +1,3 @@
-{- TODO: Mejoras de la aplicación:
-3. Añadir un boton de restart o algo asi
--}
 module Visualizer (runVisualizer) where
 
 import BoardUtils (Board, Car (..))
@@ -11,7 +8,13 @@ import Graphics.Gloss.Interface.IO.Game
 
 type Step = Int
 
-data World = World {steps :: [Board], current :: Step, playing :: Bool}
+data World = World
+  { steps :: [Board] -- Lista de tableros que representan los pasos de la solución
+  , current :: Step -- Índice del paso actual en la lista de pasos
+  , playing :: Bool -- Indica si el visualizador está en modo "play" (reproducción automática)
+  , difficultyLabel :: String -- Etiqueta de dificultad del tablero
+  }
+
 
 tileSize :: Float
 tileSize = 80
@@ -78,12 +81,9 @@ drawWorld w =
       translate 150 (-270) $ scale 0.15 0.15 $ color white $ text $ "Step: " ++ show (current w) ++ "/" ++ show (length (steps w) - 1),
       translate (-200) (-270) $ scale 0.15 0.15 $ color (if playing w then green else white) $ text "Press SPACE to Play/Pause",
       translate (-200) (-300) $ scale 0.15 0.15 $ color white $ text "Press ENTER to Restart",
-      translate (-200) 300 $ scale 0.15 0.15 $ color white $ text $ "Difficulty: " ++ show levelDifficulty, -- TODO
+      translate (-200) 300 $ scale 0.15 0.15 $ color white $ text $ "Difficulty: " ++ difficultyLabel w, -- TODO
       translate (tileSize * 3) tileSize $ scale 0.15 0.15 $ color white $ text "->"
     ]
-  where
-    solution = steps w
-    levelDifficulty = classifyDifficulty (head solution) solution
 
 -- Manejo de eventos
 handleEvent :: Event -> World -> World
@@ -100,7 +100,8 @@ updateWorld _ w
 -- Función principal
 runVisualizer :: [Board] -> IO ()
 runVisualizer solution = do
-  let initialWorld = World solution 0 False
+  let diff = classifyDifficulty (head solution) solution
+      initialWorld = World solution 0 False diff
   play
     (InWindow "Rush Hour Visualizer" (windowWidth, windowHeight) (100, 100))
     black -- color de fondo

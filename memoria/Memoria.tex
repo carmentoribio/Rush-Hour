@@ -95,6 +95,8 @@ Visualizer & Renderizado del mapa con Gloss y bucle de servicio \\
 
 \subsection{Tipos declarados}
 \begin{lstlisting}[language=Haskell]
+module BoardUtils where
+
 type Position = (Int, Int) -- (fila, columna)
 
 data Orientation = Horizontal | Vertical deriving (Show, Eq, Ord)
@@ -108,6 +110,8 @@ data Car = Car
 
 type Board = [Car] -- Lista de coches en el tablero
 
+module Difficulty where
+
 data SolutionMetrics = SolutionMetrics
   { steps :: Int, -- Número de movimientos en solución óptima
     movedCars :: Int, -- Cantidad de coches diferentes movidos
@@ -116,9 +120,16 @@ data SolutionMetrics = SolutionMetrics
   }
   deriving (Show)
 
+module Visualizer where
+
 type Step = Int
 
-data World = World {steps :: [Board], current :: Step, playing :: Bool}
+data World = World
+  { steps :: [Board] -- Lista de tableros que representan los pasos de la solución
+  , current :: Step -- Índice del paso actual en la lista de pasos
+  , playing :: Bool -- Indica si el visualizador está en modo "play" (reproducción automática)
+  , difficultyLabel :: String -- Etiqueta de dificultad del tablero
+  }
 \end{lstlisting}
 
 \section*{Problemas en el desarrollo}

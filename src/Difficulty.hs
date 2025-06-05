@@ -36,10 +36,7 @@ classifyDifficulty board solutionPath = traceShow (metrics, score) $ assignCateg
     difficultyScore :: SolutionMetrics -> Double
     -- PRE: Las métricas deben contener el número de pasos, coches movidos, coches iniciales y puntuación de simetría.
     -- POST: Devuelve un valor de dificultad entre 0 y 100.
-    difficultyScore m =
-      0.7 * stepScore ** 1.4
-        + 0.2 * sqrt movedCarsScore
-        + 0.1 * simmetryScore
+    difficultyScore m = 0.7 * stepScore ** 1.4 + 0.2 * sqrt movedCarsScore + 0.1 * simmetryScore
       where
         stepScore = fromIntegral (steps m)
         movedCarsScore = fromIntegral (movedCars m) * (100 / fromIntegral (carCount m))
@@ -60,14 +57,12 @@ countMovedCars ::
   Int -- Numero de coches que han cambiado de posición
   -- PRE: El tablero inicial y final deben ser listas de coches.
   -- POST: Devuelve el número de coches que han cambiado de posición entre el tablero inicial y final.
-countMovedCars initial final =
-  length [c | c <- final, carPositionsChanged c initial]
+countMovedCars initial final = length [c | c <- final, carPositionsChanged c initial]
   where
     carPositionsChanged car = any (\c -> carId c == carId car && positions c /= positions car) -- compara las posiciones del coche en el tablero final con el inicial
 
 countMovedCarsAllSteps :: [Board] -> Int
-countMovedCarsAllSteps boards =
-  length . Map.keys . Map.filter id $ foldl updateMoved Map.empty (zip boards (tail boards))
+countMovedCarsAllSteps boards = length . Map.keys . Map.filter id $ foldl updateMoved Map.empty (zip boards (tail boards))
   where
     updateMoved acc (b1, b2) =
       foldl (\m car -> Map.insertWith (||) (carId car) (carPositionsChanged car b1) m) acc b2
@@ -76,8 +71,7 @@ countMovedCarsAllSteps boards =
 calculateSymmetry :: Board -> Int
 -- PRE: El tablero debe ser una lista de coches.
 -- POST: Devuelve un valor de simetría entre 0 y 100, donde 100 indica máxima simetría.
-calculateSymmetry cars =
-  max horizontalSymmetry verticalSymmetry -- Devolvemos el máximo entre la simetría horizontal y vertical
+calculateSymmetry cars = max horizontalSymmetry verticalSymmetry -- Devolvemos el máximo entre la simetría horizontal y vertical
   where
     horizontalSymmetry = symmetryCheck (\(r, c) -> (r, 5 - c))
     verticalSymmetry = symmetryCheck (\(r, c) -> (5 - r, c))

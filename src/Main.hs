@@ -3,7 +3,6 @@ module Main where
 
 import AStar (aStar)
 import BoardUtils (Board, Car(..), Orientation(..), parseMap, getLegalMoves)
-import Difficulty (classifyDifficulty)
 import Visualizer (runVisualizer)
 import Data.List (find)
 import System.Environment (getArgs)
@@ -33,8 +32,6 @@ isSolved cars =
     Just v -> any ((== 5) . snd) (positions v) -- Comprueba si alguna posición de 'A' está en la columna 5
     Nothing -> False
 
--- TODO: quitar de aqui el classifyByDifficulty, o en su defecto pasarselo al visualizer como otro parametro mas (creo que esto tiene mas sentido)
--- TODO: quitar que el board se lea de terminal, mejor que se lea desde el propio visualizer
 -- TODO: posiblemente haya que mover el visualizer aqui directamente al main, y renombrar Visualizer.hs a algo rollo VisualizerUtils.hs ????
 main :: IO ()
 main = do
@@ -51,7 +48,6 @@ main = do
             -- En caso de que se encuentre solución, mostrar los pasos y la clasificación de dificultad
             Just solution -> do
               runVisualizer solution
-              putStrLn $ "Clasificación de dificultad: " ++ classifyDifficulty board solution
     _ -> do
       putStrLn "Uso: ./Main <mapa>"
       exitFailure
