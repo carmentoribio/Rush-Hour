@@ -2,7 +2,7 @@
 module Main where
 
 import AStar (aStar)
-import BoardUtils (Board, Car(..), Orientation(..), parseMap, getLegalMoves, showBoard)
+import BoardUtils (Board, Car(..), Orientation(..), parseMap, getLegalMoves)
 import Difficulty (classifyDifficulty)
 import Visualizer (runVisualizer)
 import Data.List (find)
@@ -21,7 +21,10 @@ heuristic cars =
         [v | v <- cars, carId v /= 'A', any (\(r, c) -> r == rowA && c > colMaxA) (positions v)] -- Filtra los coches que están en la misma fila que 'A' y a la derecha de 'A'
    in length blockingCars + 1
   where
-    Just (Car _ pos Horizontal) = find ((== 'A') . carId) cars -- encontrar el coche A
+    pos = case find ((== 'A') . carId) cars of
+      Just (Car _ p Horizontal) -> p
+      Just (Car _ _ Vertical)   -> error "El coche 'A' no está orientado horizontalmente."
+      Nothing                   -> error "No se encontró el coche 'A' en el tablero."
 
 isSolved :: Board -> Bool
 -- PRE: El coche 'A' debe existir en el tablero y estar orientado horizontalmente.

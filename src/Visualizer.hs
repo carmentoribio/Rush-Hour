@@ -2,13 +2,13 @@
 1. Añadir la posibilidad de meter la semilla del mapa directamente en la ventana en lugar de por terminal (lo que implicaria cambiar en el readme las instrucciones)
 2. Mostrar el nivel de dificultad en la ventana
 3. Añadir un boton de restart o algo asi
-4. Limpiar este codigo, esta super caotico perdon :,) 
+4. Limpiar este codigo, esta super caotico perdon :,)
 -}
 module Visualizer (runVisualizer) where
 
 import BoardUtils (Board, Car (..))
-import Difficulty (classifyDifficulty)
 import Data.Map qualified as Map
+import Difficulty (classifyDifficulty)
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 
@@ -80,8 +80,12 @@ drawWorld w =
     [ drawBoard (steps w !! current w),
       translate 150 (-270) $ scale 0.15 0.15 $ color white $ text $ "Step: " ++ show (current w) ++ "/" ++ show (length (steps w) - 1),
       translate (-200) (-270) $ scale 0.15 0.15 $ color (if playing w then green else white) $ text "Press SPACE to Play/Pause",
-      translate (-200) (300) $ scale 0.15 0.15 $ color white $ text $ "Difficulty: " -- TODO
+      translate (-200) 300 $ scale 0.15 0.15 $ color white $ text $ "Difficulty: " ++ show levelDifficulty, -- TODO
+      translate (tileSize * 3) tileSize $ scale 0.15 0.15 $ color white $ text "->"
     ]
+  where
+    solution = steps w
+    levelDifficulty = classifyDifficulty (head solution) solution
 
 -- Manejo de eventos
 handleEvent :: Event -> World -> World
@@ -90,7 +94,7 @@ handleEvent _ w = w
 
 -- Avanza automáticamente si está en modo "play"
 updateWorld :: Float -> World -> World
-updateWorld dt w
+updateWorld _ w
   | playing w && current w < length (steps w) - 1 = w {current = current w + 1}
   | otherwise = w
 

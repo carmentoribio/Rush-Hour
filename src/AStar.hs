@@ -18,14 +18,14 @@ aStar getChildren isGoal heuristic start = search Set.empty [(start, 0, heuristi
     -- La frontera es una lista de tuplas: (estado, g, f, camino)
     -- g: coste real hasta aquí, f: g + h, camino: desde inicial hasta aquí
     search _ [] = Nothing -- Si la frontera está vacía, no hay solución
-    search visited ((current, g, f, path) : frontier)
+    search visited ((current, g, _, path) : frontier)
       | isGoal current = Just (reverse path) -- Invertimos el camino para devolverlo en el orden correcto
       | Set.member current visited = search visited frontier
       | otherwise =
           let visited' = Set.insert current visited
               -- Genera sucesores que no han sido visitados
               children =
-                [ (child, g + 1, f + heuristic child, child : path)
+                [ (child, g + 1, g + 1 + heuristic child, child : path)
                   | child <- getChildren current,
                     Set.notMember child visited'
                 ]
