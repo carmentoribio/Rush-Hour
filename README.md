@@ -24,4 +24,4 @@ Cada línea tiene una cadena con 36 caracteres que representan el tablero sin re
 --------------------------------------------------------------------------------------
 
 # Uso
-En terminal, ejecutar `cabal build`. Una vez compilado, ejecutar `cabal run RushHour -- "<mapa>"` para iniciar el programa, donde mapa será una cadena de 36 caracteres como las del fichero RushHour.txt.
+En terminal, ejecutar `cabal build`. Una vez compilado, ejecutar `cabal run Rush-Hour.cabal -- "<mapa>"` para iniciar el programa, donde mapa será una cadena de 36 caracteres como las del fichero RushHour.txt.
