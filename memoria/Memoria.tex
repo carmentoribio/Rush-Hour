@@ -54,9 +54,27 @@ Nuestro resolvedor utiliza el algoritmo A* para encontrar la secuencia óptima d
 \end{algorithmic}
 \end{algorithm}
 
+\section*{Calculo de la dificultad}
+
+Una vez tenemos la solución del tablero, calculamos su dificultad mediante la siguiente fórmula:
+\[
+0.7 . \text{stepScore}^{1.4} + 0.2 . \sqrt{\text{movedCarsScore}} + 0.1 . \text{simmetryScore}
+\]
+
+En la cual cada termino representa:
+\begin{itemize}
+	\item \textbf{stepScore}: Número de movimientos necesarios para resolver el tablero, que se obtiene directamente del algoritmo A*.
+	\item \textbf{movedCarsScore}: Cantidad de coches que se han movido al menos una vez durante la resolución del tablero, lo cual nos da una idea de la complejidad del tablero.
+	\item \textbf{simmetryScore}: Grado de simetría del tablero, calculado como la cantidad de coches que están en posiciones simétricas respecto a uno de los ejes del tablero. 
+\end{itemize}
+
+\section*{Visualización del tablero}
+
+Hemos optado por implementar una visualización sencilla del tablero utilizando la librería \texttt{Gloss}, con la interfaz incluyendo controles básicos para pausar, reiniciar y salir del juego. Para la selección de colores hemos usado un generador de numeros pseudoaleatorios, de forma que cada coche tiene un color diferente, y el coche objetivo es siempre rojo. La visualización se actualiza cada medio segundo para mostrar el movimiento de los vehículos hasta alcanzar la solución.
+
 \section*{Librerías usadas}
 Hemos usado varias Librerías de Haskell para facilitar el desarrollo del sistema:
-\subsection{Librería gráfica: Gloss}
+\subsection*{Librería gráfica: Gloss}
 Para la facilitar la visualización del tablero y la animación de movimientos, hemos utilizado la librería \texttt{Gloss}. Esta librería permite crear gráficos de forma sencilla y eficiente, ideal para simulaciones como la nuestra. Nos interesa principalmente para:
 \begin{itemize}
 \item \textbf{Visualización del tablero} Nos permite representar el estado del tablero de forma gráfica, mostrando los vehículos con colores y su disposición en el mapa.
@@ -65,7 +83,7 @@ Para la facilitar la visualización del tablero y la animación de movimientos, 
 \end{itemize}
 Esta librería aún no permitiendo atajos de teclado o uso del portapapeles, lo cual hubiese sido útil para una mejor interacción con el usuario, pidiendo el mapa a resolver por la ventana, su faciliddad de implementación y su integración con Haskell nos hizo decantarnos por ella.
 
-\subsection{Librería de estructuras: Data}
+\subsection*{Librería de estructuras: Data}
 Por la dificultad del proyecto necesitamos poder gestionar eficientemente los estados del tablero y las posiciones de los vehículos. Para ello, hemos utilizado varias estructuras de datos proporcionadas por la librería \texttt{Data} de Haskell:
 \begin{itemize}
 \item \texttt{Data.Map} para el tratamiento de los estados del tablero, parsearlos, escribirlos y pasarlos como argumentos.
@@ -74,7 +92,7 @@ Por la dificultad del proyecto necesitamos poder gestionar eficientemente los es
 \end{itemize}
 
 \section*{Estructura usada}
-\subsection{Módulos}
+\subsection*{Módulos}
 Los módulos del proyecto están organizados de la siguiente manera:
 
 \begin{table}[h!]
@@ -92,8 +110,10 @@ Visualizer & Renderizado del mapa con Gloss y bucle de servicio \\
 \end{tabular}
 \end{table}
 
+\subsection*{Tipos declarados}
 
-\subsection{Tipos declarados}
+En cada modulo hemos definido los tipos necesarios para representar el estado del tablero, los vehículos y las métricas de dificultad.  Hemos usado varios type para facilidad de lectura y mantenimiento del código, así como para mejorar la legibilidad. Los data son principalmente usados como structs de C, manteniendo en un solo tipo toda la información relevante para los calculos del modulo. A continuación mostramos la implementación:
+
 \begin{lstlisting}[language=Haskell]
 module BoardUtils where
 
@@ -133,13 +153,9 @@ data World = World
 \end{lstlisting}
 
 \section*{Problemas en el desarrollo}
-\begin{itemize}
-\item \textbf{Representación eficiente del estado}: Solucionado con hashing de posiciones
-\item \textbf{Generación de movimientos válidos}: Implementación mediante guardas en Haskell
-\item \textbf{Rendimiento en grandes tableros}: Optimizado con poda de estados repetidos
-\end{itemize}
 
-\section{Conclusiones}
+
+\section*{Conclusiones}
 El sistema logra calcular consistentemente la dificultad de tableros mediante A*, demostrando la efectividad de algoritmos heurísticos en problemas de planificación. Las estructuras inmutables de Haskell mostraron ventajas en la gestión segura del estado, aunque requirieron técnicas específicas de optimización. El lenguaje nos permitió implementar un sistema robusto y eficiente, con técnicas de orden superior que facilitan la modelización de este problema. La visualización con Gloss mejoró la experiencia del usuario, permitiendo observar el proceso de resolución en tiempo real.
 
 \end{document}
