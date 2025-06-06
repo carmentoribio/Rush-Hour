@@ -152,8 +152,18 @@ data World = World
   }
 \end{lstlisting}
 
-\section*{Problemas en el desarrollo}
+\section*{Mejoras y optimizaciones}
 
+Por la naturaleza de la práctica hemos implementado una solución básica del problema, centrándonos en la facilidad de implementación y la claridad del código. Sin embargo, hemos identificado varias áreas de mejora y optimización en las que se podría trabajar:
+
+\begin{itemize}
+	\item \textbf{Optimización de la heurística}: La heurística actual es simple y no tiene en cuenta la disposición de los vehículos no directamente bloqueantes.
+	\item \textbf{Paralelización de la búsqueda}: Dado que A* explora múltiples nodos, se podría implementar una versión paralela del algoritmo para aprovechar mejor los recursos del sistema.
+	\item \textbf{Mejora de la visualización}: Implementar controles más avanzados, como la posibilidad de avanzar o retroceder en los pasos de la solución, o incluso permitir al usuario interactuar con el tablero.
+	\item \textbf{Optimización de la gestión de estados}: Utilizar estructuras de datos más eficientes para la gestión de los estados del tablero, como tries o tablas hash, podría mejorar el rendimiento en tableros díficiles.
+	\item \textbf{Generación de tableros aleatorios}: Implementar un generador de tableros aleatorios con diferentes niveles de dificultad, para poder probar el sistema con una variedad de casos.
+	\item \textbf{Mejora de la interfaz de usuario}: Implementar una interfaz gráfica más completa, con opciones para cargar tableros desde archivos o introducirlos manualmente, así como una mejor visualización de los movimientos realizados.
+\end{itemize}
 
 \section*{Conclusiones}
 El sistema logra calcular consistentemente la dificultad de tableros mediante A*, demostrando la efectividad de algoritmos heurísticos en problemas de planificación. Las estructuras inmutables de Haskell mostraron ventajas en la gestión segura del estado, aunque requirieron técnicas específicas de optimización. El lenguaje nos permitió implementar un sistema robusto y eficiente, con técnicas de orden superior que facilitan la modelización de este problema. La visualización con Gloss mejoró la experiencia del usuario, permitiendo observar el proceso de resolución en tiempo real.
