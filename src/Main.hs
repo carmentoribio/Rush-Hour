@@ -32,7 +32,6 @@ isSolved cars =
     Just v -> any ((== 5) . snd) (positions v) -- Comprueba si alguna posición de 'A' está en la columna 5
     Nothing -> False
 
--- TODO: posiblemente haya que mover el visualizer aqui directamente al main, y renombrar Visualizer.hs a algo rollo VisualizerUtils.hs ????
 main :: IO ()
 main = do
   args <- getArgs
