@@ -43,8 +43,8 @@ classifyDifficulty board solutionPath = assignCategory score
     -- POST: Devuelve una cadena que indica la categoría de dificultad del tablero.
     assignCategory s
       | s < 50 = "BEGINNER"
-      | s < 100 = "INTERMEDIATE"
-      | s < 125 = "ADVANCED"
+      | s < 70 = "INTERMEDIATE"
+      | s < 90 = "ADVANCED"
       | otherwise = "EXPERT"
 
 countMovedCars ::
