@@ -2,7 +2,6 @@ module Difficulty where
 
 import BoardUtils (Board, Car (..))
 import Data.Map qualified as Map
-import Debug.Trace (traceShow)
 
 -- Estructura para métricas de solución
 data SolutionMetrics = SolutionMetrics
@@ -19,7 +18,7 @@ classifyDifficulty ::
   String
 -- PRE: Cierto.
 -- POST: Devuelve una cadena que indica la categoría de dificultad del tablero ("Principiante", "Intermedio", "Avanzado" o "Experto").
-classifyDifficulty board solutionPath = traceShow (metrics, score) $ assignCategory score
+classifyDifficulty board solutionPath = assignCategory score
   where
     metrics =
       SolutionMetrics
