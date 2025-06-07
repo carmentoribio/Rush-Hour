@@ -1,3 +1,7 @@
+*.log
+*.out
+*.aux
+*.toc
 dist
 dist-*
 cabal-dev
