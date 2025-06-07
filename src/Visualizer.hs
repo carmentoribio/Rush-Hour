@@ -9,12 +9,11 @@ import Graphics.Gloss.Interface.IO.Game
 type Step = Int
 
 data World = World
-  { steps :: [Board] -- Lista de tableros que representan los pasos de la solución
-  , current :: Step -- Índice del paso actual en la lista de pasos
-  , playing :: Bool -- Indica si el visualizador está en modo "play" (reproducción automática)
-  , difficultyLabel :: String -- Etiqueta de dificultad del tablero
+  { steps :: [Board], -- Lista de tableros que representan los pasos de la solución
+    current :: Step, -- Índice del paso actual en la lista de pasos
+    playing :: Bool, -- Indica si el visualizador está en modo "play" (reproducción automática)
+    difficultyLabel :: String -- Etiqueta de dificultad del tablero
   }
-
 
 tileSize :: Float
 tileSize = 80
@@ -23,8 +22,8 @@ boardSize :: Int
 boardSize = 6
 
 windowWidth, windowHeight :: Int
-windowWidth = boardSize * round tileSize + 200
-windowHeight = boardSize * round tileSize + 50 + 200 -- espacio extra para contador
+windowWidth = boardSize * round tileSize + 250 -- espacio extra para mostrar el nivel de dificultad
+windowHeight = boardSize * round tileSize + 250 -- espacio extra para mostrar el contador de pasos entre otros
 
 -- ========================= ASIGNACIÓN DE COLORES =========================
 -- Asigna un color a cada coche basado en su ID (letra mayúscula)
@@ -35,11 +34,15 @@ carColor char = makeColor r g b 1.0 -- Crea un color RGB a partir de HSV, con op
   where
     idx = fromEnum char - fromEnum 'A'
     total = 26 -- Total de letras mayúsculas (A-Z)
-    jump = 7 -- Coprimo de 26 para mezclar todos los colores
+    jump = 11 -- Coprimo de 26 para mezclar todos los colores
     scrambledIdx = (idx * jump) `mod` total -- Índice modificado para mezclar colores y que no se asignen en una tonalidad lineal (para aumentar la diversidad de colores y el contraste en general)
-    hue = fromIntegral scrambledIdx * (360 / 26) -- Calculo de la tonalidad (hue) en el espacio de color HSV
-    (r, g, b) = hsvToRGB hue 1.0 1.0 -- Full saturación y brillo
-
+    -- Saltar el rango rojo (0-20° y 340-360°) para evitar coches con tonalidades rojas
+    hueBase = fromIntegral scrambledIdx * (360 / fromIntegral total)
+    hue
+      | hueBase < 20 = hueBase + 30
+      | hueBase > 340 = hueBase - 30
+      | otherwise = hueBase
+    (r, g, b) = hsvToRGB hue 1.0 1.0
     hsvToRGB :: Float -> Float -> Float -> (Float, Float, Float)
     hsvToRGB h s v = (r' + m, g' + m, b' + m)
       where
@@ -66,29 +69,30 @@ drawBoard :: Board -> Picture
 drawBoard cars = pictures [drawTile (r, c) | r <- [0 .. 5], c <- [0 .. 5]]
   where
     posMap = Map.fromList [((r, c), carId car) | car <- cars, (r, c) <- positions car]
-    drawTile (r, c) = translate (fromIntegral c * tileSize - 240) (240 - fromIntegral r * tileSize) $
-                      color col $
-                      rectangleSolid tileSize tileSize
+    drawTile (r, c) =
+      translate (fromIntegral c * tileSize - 240) (240 - fromIntegral r * tileSize) $
+        color col $
+          rectangleSolid tileSize tileSize
       where
         ch = Map.findWithDefault 'o' (r, c) posMap
         col = carColor ch
 
--- Dibuja contador y botón "Play"
+-- Dibuja la ventana completa: el tablero, el nivel de dificultad, el contador de pasos, etc.
 drawWorld :: World -> Picture
 drawWorld w =
   pictures
-    [ drawBoard (steps w !! current w),
-      translate 150 (-270) $ scale 0.15 0.15 $ color white $ text $ "Step: " ++ show (current w) ++ "/" ++ show (length (steps w) - 1),
-      translate (-200) (-270) $ scale 0.15 0.15 $ color (if playing w then green else white) $ text "Press SPACE to Play/Pause",
-      translate (-200) (-300) $ scale 0.15 0.15 $ color white $ text "Press ENTER to Restart",
-      translate (-200) 300 $ scale 0.15 0.15 $ color white $ text $ "Difficulty: " ++ difficultyLabel w, -- TODO
-      translate (tileSize * 3) tileSize $ scale 0.15 0.15 $ color white $ text "->"
+    [ drawBoard (steps w !! current w), -- Tablero
+      translate (-200) 300 $ scale 0.15 0.15 $ color white $ text $ "Difficulty: " ++ difficultyLabel w, -- Etiqueta que muestra la dificultad del nivel
+      translate 150 (-270) $ scale 0.15 0.15 $ color white $ text $ "Step: " ++ show (current w) ++ "/" ++ show (length (steps w) - 1), -- Contador de pasos
+      translate (-200) (-270) $ scale 0.15 0.15 $ color (if playing w then green else white) $ text "Press SPACE to Play/Pause", -- Instrucciones de Reproducir/Pausar
+      translate (-200) (-300) $ scale 0.15 0.15 $ color white $ text "Press ENTER to Restart", -- Instrucciones para empezar el nivel de 0
+      translate (tileSize * 3) tileSize $ scale 0.15 0.15 $ color white $ text "-> EXIT" -- Flecha que muestra la salida
     ]
 
 -- Manejo de eventos
 handleEvent :: Event -> World -> World
-handleEvent (EventKey (SpecialKey KeySpace) Down _ _) w = w {playing = not (playing w)}
-handleEvent (EventKey (SpecialKey KeyEnter) Down _ _) w = w {current = 0, playing = False}
+handleEvent (EventKey (SpecialKey KeySpace) Down _ _) w = w {playing = not (playing w)} -- Pulsar ESPACIO alterna Play/Pause
+handleEvent (EventKey (SpecialKey KeyEnter) Down _ _) w = w {current = 0, playing = False} -- Pulsar ENTER reinicia el nivel (y para la animación)
 handleEvent _ w = w
 
 -- Avanza automáticamente si está en modo "play"

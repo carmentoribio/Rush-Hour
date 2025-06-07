@@ -1,4 +1,3 @@
--- TODO general: fix los warnings que da ghc -Wall (salen al ejecutar cabal build)
 module Main where
 
 import AStar (aStar)
@@ -48,5 +47,5 @@ main = do
             Just solution -> do
               runVisualizer solution
     _ -> do
-      putStrLn "Uso: ./Main <mapa>"
+      putStrLn "Uso: cabal run Rush-Hour.cabal -- \"<mapa>\""
       exitFailure

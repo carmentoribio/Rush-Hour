@@ -1,6 +1,3 @@
-{- TODO:
-Ajustar los parámetros para clasificar correctamente los mapas
--}
 module Difficulty where
 
 import BoardUtils (Board, Car (..))
@@ -20,7 +17,7 @@ classifyDifficulty ::
   Board -> -- El tablero inicial
   [Board] -> -- Lista de tableros que representan la solución
   String
--- PRE: El tablero debe ser una cadena de 36 caracteres (6x6) con mayúsculas (A-Z) y 'o' (espacio vacío).
+-- PRE: Cierto.
 -- POST: Devuelve una cadena que indica la categoría de dificultad del tablero ("Principiante", "Intermedio", "Avanzado" o "Experto").
 classifyDifficulty board solutionPath = traceShow (metrics, score) $ assignCategory score
   where
@@ -34,7 +31,7 @@ classifyDifficulty board solutionPath = traceShow (metrics, score) $ assignCateg
     score = difficultyScore metrics
 
     difficultyScore :: SolutionMetrics -> Double
-    -- PRE: Las métricas deben contener el número de pasos, coches movidos, coches iniciales y puntuación de simetría.
+    -- PRE: La métrica 'm' debe estar bien formada.
     -- POST: Devuelve un valor de dificultad entre 0 y 100.
     difficultyScore m = 0.7 * stepScore ** 1.4 + 0.2 * sqrt movedCarsScore + 0.1 * simmetryScore
       where
@@ -43,7 +40,7 @@ classifyDifficulty board solutionPath = traceShow (metrics, score) $ assignCateg
         simmetryScore = fromIntegral (100 - symmetryScore m)
 
     assignCategory :: Double -> String
-    -- PRE: El score debe ser un valor entre 0 y 100.
+    -- PRE: El score 's' debe ser un valor entre 0 y 100.
     -- POST: Devuelve una cadena que indica la categoría de dificultad del tablero.
     assignCategory s
       | s < 50 = "BEGINNER"
@@ -55,7 +52,7 @@ countMovedCars ::
   Board -> -- Tablero inicial
   Board -> -- Tablero final
   Int -- Numero de coches que han cambiado de posición
-  -- PRE: El tablero inicial y final deben ser listas de coches.
+  -- PRE: Cierto.
   -- POST: Devuelve el número de coches que han cambiado de posición entre el tablero inicial y final.
 countMovedCars initial final = length [c | c <- final, carPositionsChanged c initial]
   where
@@ -69,7 +66,7 @@ countMovedCarsAllSteps boards = length . Map.keys . Map.filter id $ foldl update
     carPositionsChanged car = any (\c -> carId c == carId car && positions c /= positions car)
 
 calculateSymmetry :: Board -> Int
--- PRE: El tablero debe ser una lista de coches.
+-- PRE: Cierto.
 -- POST: Devuelve un valor de simetría entre 0 y 100, donde 100 indica máxima simetría.
 calculateSymmetry cars = max horizontalSymmetry verticalSymmetry -- Devolvemos el máximo entre la simetría horizontal y vertical
   where
@@ -78,5 +75,5 @@ calculateSymmetry cars = max horizontalSymmetry verticalSymmetry -- Devolvemos e
 
     symmetryCheck transform = (length matches * 100) `div` length cars
       where
-      mirrored = Map.fromList [(transform pos, car) | car <- cars, pos <- positions car] -- Creamos un mapa de posiciones reflejadas
-      matches = [car | car <- cars, all (`Map.member` mirrored) (positions car)] -- Comprobamos cuántos coches tienen posiciones que coinciden con sus reflejos
+        mirrored = Map.fromList [(transform pos, car) | car <- cars, pos <- positions car] -- Creamos un mapa de posiciones reflejadas
+        matches = [car | car <- cars, all (`Map.member` mirrored) (positions car)] -- Comprobamos cuántos coches tienen posiciones que coinciden con sus reflejos

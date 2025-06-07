@@ -11,8 +11,8 @@ aStar ::
   (a -> Int) -> -- Heurística para estimar el coste desde un estado hasta el objetivo
   a -> -- Nodo inicial
   Maybe [a] -- Resultado de la búsqueda
-  -- PRE: La función `isGoal` debe ser una función que verifica si un estado es el objetivo. La heuristica debe ser válida y no negativa para todos los estados.
-  -- POST: Devuelve un camino desde el estado inicial hasta el objetivo, o Nothing si no hay solución.
+  -- PRE: La heuristica debe ser válida y no negativa para todos los estados.
+  -- POST: Devuelve un camino desde el estado inicial hasta el objetivo, o Nothing si no hay solución válida.
 aStar getChildren isGoal heuristic start = search Set.empty [(start, 0, heuristic start, [start])]
   where
     -- La frontera es una lista de tuplas: (estado, g, f, camino)
@@ -23,15 +23,15 @@ aStar getChildren isGoal heuristic start = search Set.empty [(start, 0, heuristi
       | Set.member current visited = search visited frontier
       | otherwise = search visited' newFrontier
       where
-      visited' = Set.insert current visited
-      -- Genera sucesores que no han sido visitados
-      children =
-        [ (child, g + 1, g + 1 + heuristic child, child : path)
-        | child <- getChildren current,
-          Set.notMember child visited'
-        ]
-      -- Añade los hijos a la frontera y la ordena por f (coste estimado)
-      newFrontier = insertAllSorted children frontier
+        visited' = Set.insert current visited
+        -- Genera sucesores que no han sido visitados
+        children =
+          [ (child, g + 1, g + 1 + heuristic child, child : path)
+            | child <- getChildren current,
+              Set.notMember child visited'
+          ]
+        -- Añade los hijos a la frontera y la ordena por f (coste estimado)
+        newFrontier = insertAllSorted children frontier
 
     -- Inserta una lista de nodos en la frontera y la ordena por f
     insertAllSorted xs ys = sortOn (\(_, _, f, _) -> f) (xs ++ ys)

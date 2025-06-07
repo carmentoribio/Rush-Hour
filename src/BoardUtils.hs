@@ -7,14 +7,14 @@ import Data.Set qualified as Set
 -- ======================== Definición de tipos =========================
 type Position = (Int, Int) -- (fila, columna)
 
-data Orientation = Horizontal | Vertical deriving (Show, Eq, Ord)
+data Orientation = Horizontal | Vertical deriving (Eq, Ord)
 
 data Car = Car
   { carId :: Char, -- Identificador del coche (A-Z)
     positions :: [Position], -- Lista de posiciones ocupadas por el coche
     orientation :: Orientation -- Orientación del coche (Horizontal o Vertical)
   }
-  deriving (Show, Eq, Ord)
+  deriving (Eq, Ord)
 
 type Board = [Car] -- Lista de coches en el tablero
 
@@ -32,7 +32,7 @@ parseMap str
     validChar c = c == 'o' || (c >= 'A' && c <= 'Z')
     positions = [(i `div` 6, i `mod` 6, c) | (i, c) <- zip [0 ..] str, c /= 'o'] -- (fila, columna, caracter) para cada posición ocupada
     grouped = Map.fromListWith (++) [(c, [(row, col)]) | (row, col, c) <- positions] -- Agrupa posiciones por coche
-    cars = [Car carId posList (getOrientation posList) | (carId, posList) <- Map.toList grouped]  -- Crea un coche con su ID, posiciones y orientación
+    cars = [Car carId posList (getOrientation posList) | (carId, posList) <- Map.toList grouped] -- Crea un coche con su ID, posiciones y orientación
 
 getOrientation :: [Position] -> Orientation
 -- PRE: Las posiciones deben pertenecer al mismo coche y estar en una fila o columna continua.
@@ -56,14 +56,16 @@ moveVehicle :: Board -> Car -> [Board]
 -- POST: Devuelve una lista de tableros resultantes de hacer todos los movimientos válidos posibles del coche 'car'.
 moveVehicle board car =
   case orientation car of -- Genera los tableros resultantes de mover el coche en todas las direcciones posibles
-    Horizontal -> -- En caso de ser horizontal, concatenamos todos los movimientos posibles hacia la izquierda y hacia la derecha, y generamos una lista de tableros
+    Horizontal ->
+      -- En caso de ser horizontal, concatenamos todos los movimientos posibles hacia la izquierda y hacia la derecha, y generamos una lista de tableros
       map (normalizeBoard . replaceCar board . newCars) $
         generateMoves (\(r, c) -> (r, c - 1)) -- izquierda
-        ++ generateMoves (\(r, c) -> (r, c + 1)) -- derecha
-    Vertical -> -- En caso de ser vertical, concatenamos todos los movimientos posibles hacia arriba y hacia abajo, y generamos una lista de tableros
+          ++ generateMoves (\(r, c) -> (r, c + 1)) -- derecha
+    Vertical ->
+      -- En caso de ser vertical, concatenamos todos los movimientos posibles hacia arriba y hacia abajo, y generamos una lista de tableros
       map (normalizeBoard . replaceCar board . newCars) $
         generateMoves (\(r, c) -> (r - 1, c)) -- arriba
-        ++ generateMoves (\(r, c) -> (r + 1, c)) -- abajo
+          ++ generateMoves (\(r, c) -> (r + 1, c)) -- abajo
   where
     -- Obtiene las posiciones ocupadas por otros coches en el tablero
     occPos = occupiedPositions board `Set.difference` Set.fromList (positions car)
